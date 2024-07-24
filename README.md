@@ -7,7 +7,7 @@ Welcome to the Hotel Luxor Management System! This program is designed to manage
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
-    <iframe src="https://drive.google.com/file/d/1qzy2rXzdfiMitIJUhM-W6MUScAHX8TpF/preview" width="640" height="480"></iframe>
+    iframe src="https://drive.google.com/file/d/1qzy2rXzdfiMitIJUhM-W6MUScAHX8TpF/preview" width="640" height="480"></iframe
   </a>
 </p>
 
