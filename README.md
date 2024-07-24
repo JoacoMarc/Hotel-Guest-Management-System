@@ -5,6 +5,12 @@
 
 Welcome to the Hotel Luxor Management System! This program is designed to manage hotel guests, including check-ins, room assignments, and various guest-related queries. 
 
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+    <iframe src="https://drive.google.com/file/d/1qzy2rXzdfiMitIJUhM-W6MUScAHX8TpF/preview" width="640" height="480"></iframe>
+  </a>
+</p>
+
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
@@ -45,8 +51,6 @@ Run the main program:
 ```bash
 python main.py
 ```
-
-![Hotel Luxor](https://github.com/JoacoMarc/Hotel-Guest-Management-System/blob/main/LuxorVideo.mp4)
 
 
 ## Examples
