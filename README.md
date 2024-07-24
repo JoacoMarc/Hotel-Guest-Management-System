@@ -5,7 +5,7 @@
 
 Welcome to the Hotel Luxor Management System! This program is designed to manage hotel guests, including check-ins, room assignments, and various guest-related queries. 
 
-[![Watch the video](https://drive.google.com/file/d/1qzy2rXzdfiMitIJUhM-W6MUScAHX8TpF/view?usp=drive_link)
+<iframe src="https://drive.google.com/file/d/1qzy2rXzdfiMitIJUhM-W6MUScAHX8TpF/preview" width="640" height="480" allow="autoplay"></iframe>
 
 
 ## Table of Contents
