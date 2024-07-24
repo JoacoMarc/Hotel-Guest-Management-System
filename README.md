@@ -1,6 +1,3 @@
-¡Claro! Aquí tienes un ejemplo de un archivo README completo y bien estructurado para tu proyecto. Este archivo README está diseñado para proporcionar toda la información necesaria para que los usuarios entiendan, configuren y utilicen tu proyecto. He incluido ejemplos de uso, dependencias y una sección para posibles colaboraciones.
-
----
 
 # Hotel Luxor Management System
 
