@@ -77,5 +77,3 @@ Choose an option:
 
 ---
 
-Feel free to enhance this README with more details or multimedia content such as diagrams or screenshots to make it more visually appealing. You can replace the placeholder image URL with an actual image link.
-
