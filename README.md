@@ -1,7 +1,7 @@
 
 # Hotel Luxor Management System
 
-![Hotel Luxor](https://example.com/hotel_luxor_image.jpg)
+![Hotel Luxor](https://github.com/JoacoMarc/Hotel-Guest-Management-System/blob/main/HotelLuxorBanner.jpg)
 
 Welcome to the Hotel Luxor Management System! This program is designed to manage hotel guests, including check-ins, room assignments, and various guest-related queries. 
 
