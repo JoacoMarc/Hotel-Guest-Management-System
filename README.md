@@ -45,6 +45,7 @@ Run the main program:
 ```bash
 python main.py
 ```
+https://github.com/JoacoMarc/Hotel-Guest-Management-System/blob/main/LuxorVideo.mp4
 
 ## Examples
 ### Main Menu
