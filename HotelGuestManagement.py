@@ -117,17 +117,40 @@ def sort_by_last_name(guest):
     """Sort function by last name."""
     return guest["last_name"]
 
+def create_guest_file(matrix):
+    """Creates a file with guest information."""
+    try:
+        with open("guests.txt", "w") as file:
+            guests = [room for floor in matrix for room in floor if room != 0]
+            guests.sort(key=sort_by_last_name)
+
+            for guest in guests:
+                guest_list = [str(guest["id"]), guest["first_name"], guest["last_name"], 
+                              str(guest["birth_date"]), str(guest["check_in"]), str(guest["check_out"]), 
+                              str(guest["occupants"])]
+                for occupant in guest["additional_occupants"]:
+                    guest_list.extend([str(occupant["id"]), occupant["first_name"], occupant["last_name"], 
+                                       str(occupant["birth_date"])])
+                file.write(";".join(guest_list) + "\n")
+
+        print(Fore.GREEN + "Guest file created successfully." + Style.RESET_ALL)
+
+    except FileNotFoundError:
+        print(Fore.RED + "File not found." + Style.RESET_ALL)
+    except OSError as msg:
+        print(Fore.RED + "Error:", msg, Style.RESET_ALL)
+
 def main():
     """Main function to handle the program logic."""
     print(Fore.MAGENTA + Style.BRIGHT + "=======================")
-    print(Fore.CYAN + Style.BRIGHT + "WELLCOME TO LUXOR HOTEL")
+    print(Fore.CYAN + Style.BRIGHT + "WELCOME TO LUXOR HOTEL")
     print(Fore.MAGENTA + Style.BRIGHT + "=======================", end="\n\n")
     
     id_list = []
     matrix = generate_matrix()
 
     while True:
-        print(Fore.YELLOW + "\nMenu:\n1. Enter new guest\n2. Find guest by last name\n3. Most occupied floor\n4. Number of empty rooms\n5. Floor with most occupants\n6. Next departures\n7. View hotel\n8. Exit" + Style.RESET_ALL)
+        print(Fore.YELLOW + "\nMenu:\n1. Enter new guest\n2. Find guest by last name\n3. Most occupied floor\n4. Number of empty rooms\n5. Floor with most occupants\n6. Next departures\n7. View hotel\n8. Create guest file\n9. Exit" + Style.RESET_ALL)
         choice = input(Fore.CYAN + "Choose an option: " + Style.RESET_ALL)
         
         if choice == '1':
@@ -187,21 +210,11 @@ def main():
             print_matrix(matrix)
 
         elif choice == '8':
+            create_guest_file(matrix)
+
+        elif choice == '9':
             break
-
-    try:
-        with open("guests.txt", "at") as file:
-            guests = [room for floor in matrix for room in floor if room != 0]
-            guests.sort(key=sort_by_last_name)
-
-            for guest in guests:
-                guest_list = list(guest.values())
-                file.write(";".join(map(str, guest_list)) + "\n")
-
-    except FileNotFoundError:
-        print(Fore.RED + "File not found." + Style.RESET_ALL)
-    except OSError as msg:
-        print(Fore.RED + "Error:", msg, Style.RESET_ALL)
 
 if __name__ == "__main__":
     main()
+
