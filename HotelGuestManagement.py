@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 from tabulate import tabulate
 from colorama import Fore, Style, init
+from openpyxl import Workbook
 
 # Initialize colorama
 init()
@@ -118,22 +119,49 @@ def sort_by_last_name(guest):
     return guest["last_name"]
 
 def create_guest_file(matrix):
-    """Creates a file with guest information."""
+    """Creates an Excel file with guest information."""
     try:
-        with open("guests.txt", "w") as file:
-            guests = [room for floor in matrix for room in floor if room != 0]
-            guests.sort(key=sort_by_last_name)
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Guests"
 
-            for guest in guests:
-                guest_list = [str(guest["id"]), guest["first_name"], guest["last_name"], 
-                              str(guest["birth_date"]), str(guest["check_in"]), str(guest["check_out"]), 
-                              str(guest["occupants"])]
-                for occupant in guest["additional_occupants"]:
-                    guest_list.extend([str(occupant["id"]), occupant["first_name"], occupant["last_name"], 
-                                       str(occupant["birth_date"])])
-                file.write(";".join(guest_list) + "\n")
+        headers = ["ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
 
+        ws.append(headers)
+
+        guests = [room for floor in matrix for room in floor if room != 0]
+        guests.sort(key=sort_by_last_name)
+
+        for guest in guests:
+            guest_list = [guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
+                          guest["check_in"], guest["check_out"], guest["occupants"]]
+            ws.append(guest_list)
+            for occupant in guest["additional_occupants"]:
+                occupant_list = ["", "", "", "", "", "", ""]
+                occupant_list.extend([occupant["id"], occupant["first_name"], occupant["last_name"], 
+                                      occupant["birth_date"]])
+                ws.append(occupant_list)
+
+        wb.save("guests.xlsx")
         print(Fore.GREEN + "Guest file created successfully." + Style.RESET_ALL)
+
+    except FileNotFoundError:
+        print(Fore.RED + "File not found." + Style.RESET_ALL)
+    except OSError as msg:
+        print(Fore.RED + "Error:", msg, Style.RESET_ALL)
+
+def clear_guest_file():
+    """Clears the Excel file by creating a new empty file."""
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Guests"
+
+        headers = ["ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
+        ws.append(headers)
+
+        wb.save("guests.xlsx")
+        print(Fore.GREEN + "Guest file cleared successfully." + Style.RESET_ALL)
 
     except FileNotFoundError:
         print(Fore.RED + "File not found." + Style.RESET_ALL)
@@ -150,7 +178,7 @@ def main():
     matrix = generate_matrix()
 
     while True:
-        print(Fore.YELLOW + "\nMenu:\n1. Enter new guest\n2. Find guest by last name\n3. Most occupied floor\n4. Number of empty rooms\n5. Floor with most occupants\n6. Next departures\n7. View hotel\n8. Create guest file\n9. Exit" + Style.RESET_ALL)
+        print(Fore.YELLOW + "\nMenu:\n1. Enter new guest\n2. Find guest by last name\n3. Most occupied floor\n4. Number of empty rooms\n5. Floor with most occupants\n6. Next departures\n7. View hotel\n8. Create or update guest Excel\n9. Clear guest Excel and vacate hotel\n10. Exit" + Style.RESET_ALL)
         choice = input(Fore.CYAN + "Choose an option: " + Style.RESET_ALL)
         
         if choice == '1':
@@ -213,8 +241,14 @@ def main():
             create_guest_file(matrix)
 
         elif choice == '9':
+            id_list.clear()
+            matrix = generate_matrix()
+            clear_guest_file()
+
+        elif choice == '10':
             break
 
 if __name__ == "__main__":
     main()
+
 
