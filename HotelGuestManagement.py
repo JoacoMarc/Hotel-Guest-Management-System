@@ -125,22 +125,20 @@ def create_guest_file(matrix):
         ws = wb.active
         ws.title = "Guests"
 
-        headers = ["ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
+        headers = ["Floor", "Room", "ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
 
         ws.append(headers)
 
-        guests = [room for floor in matrix for room in floor if room != 0]
-        guests.sort(key=sort_by_last_name)
-
-        for guest in guests:
-            guest_list = [guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
-                          guest["check_in"], guest["check_out"], guest["occupants"]]
-            ws.append(guest_list)
-            for occupant in guest["additional_occupants"]:
-                occupant_list = ["", "", "", "", "", "", ""]
-                occupant_list.extend([occupant["id"], occupant["first_name"], occupant["last_name"], 
-                                      occupant["birth_date"]])
-                ws.append(occupant_list)
+        for floor_index, floor in enumerate(matrix):
+            for room_index, guest in enumerate(floor):
+                if guest != 0:
+                    guest_list = [10 - floor_index, room_index + 1, guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
+                                  guest["check_in"], guest["check_out"], guest["occupants"]]
+                    ws.append(guest_list)
+                    for occupant in guest["additional_occupants"]:
+                        occupant_list = [10 - floor_index, room_index + 1, occupant["id"], occupant["first_name"], occupant["last_name"], 
+                                         occupant["birth_date"], "", "", ""]
+                        ws.append(occupant_list)
 
         wb.save("guests.xlsx")
         print(Fore.GREEN + "Guest file created successfully." + Style.RESET_ALL)
@@ -157,7 +155,7 @@ def clear_guest_file():
         ws = wb.active
         ws.title = "Guests"
 
-        headers = ["ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
+        headers = ["Floor", "Room", "ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
         ws.append(headers)
 
         wb.save("guests.xlsx")
@@ -250,5 +248,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
