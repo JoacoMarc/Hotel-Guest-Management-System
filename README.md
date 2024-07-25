@@ -24,7 +24,8 @@ Welcome to the Hotel Luxor Management System! This program is designed to manage
 - View the floor with the most occupants
 - View rooms with upcoming departures
 - Visual representation of the hotel's occupancy
-- Create a file with guest information
+- Create an Excel file with guest information
+- Clear the guest file and vacate the hotel
 
 ## Installation
 1. Clone the repository:
@@ -63,8 +64,9 @@ Menu:
 5. Floor with most occupants
 6. Next departures
 7. View hotel
-8. Create guest file
-9. Exit
+8. Create or update guest Excel
+9. Clear guest Excel and vacate hotel
+10. Exit
 
 Choose an option:
 ```
@@ -80,7 +82,10 @@ Choose an option:
 - Select option `2` and enter the last name to search for a guest. The program will display the guest's information and room number.
 
 ### Creating a Guest File
-- Select option `8` to create a file (`guests.txt`) with all guest information sorted by last name.
+- Select option `8` to create an Excel file (`guests.xlsx`) with all guest information sorted by last name. Each occupant will have their own row to ensure the data is properly aligned.
+
+### Clearing the Guest File and Vacating the Hotel
+- Select option `9` to clear the guest file and vacate the hotel. This will reset all guest information and create a new empty Excel file.
 
 ## Contributing
 Contributions are welcome! Please fork this repository and submit a pull request for any features, bug fixes, or improvements.
