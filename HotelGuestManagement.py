@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from tabulate import tabulate
 from colorama import Fore, Style, init
