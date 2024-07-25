@@ -1,22 +1,21 @@
+Aquí tienes un `README.md` actualizado y mejorado para el Hotel Luxor Management System:
 
+```markdown
 # Hotel Luxor Management System
 
 ![Hotel Luxor](https://github.com/JoacoMarc/Hotel-Guest-Management-System/blob/main/HotelLuxorBanner.jpg)
 
-Welcome to the Hotel Luxor Management System! This program is designed to manage hotel guests, including check-ins, room assignments, and various guest-related queries. 
-
+Welcome to the Hotel Luxor Management System! This program is designed to manage hotel guests, including check-ins, room assignments, and various guest-related queries.
 
 [![Watch the video](https://github.com/JoacoMarc/Hotel-Guest-Management-System/blob/main/LuxorPreview.png)](https://drive.google.com/file/d/1qzy2rXzdfiMitIJUhM-W6MUScAHX8TpF/view?usp=drive_link)
-
-
-
 
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Examples](#examples)
-
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 - Add new guests with their details
@@ -27,6 +26,7 @@ Welcome to the Hotel Luxor Management System! This program is designed to manage
 - View the floor with the most occupants
 - View rooms with upcoming departures
 - Visual representation of the hotel's occupancy
+- Create a file with guest information
 
 ## Installation
 1. Clone the repository:
@@ -52,15 +52,11 @@ Run the main program:
 python main.py
 ```
 
-
 ## Examples
 ### Main Menu
 Upon running the program, you will be greeted with the following menu:
 
-
-
-
-
+```
 Menu:
 1. Enter new guest
 2. Find guest by last name
@@ -69,7 +65,8 @@ Menu:
 5. Floor with most occupants
 6. Next departures
 7. View hotel
-8. Exit
+8. Create guest file
+9. Exit
 
 Choose an option:
 ```
@@ -84,6 +81,14 @@ Choose an option:
 ### Finding a Guest by Last Name
 - Select option `2` and enter the last name to search for a guest. The program will display the guest's information and room number.
 
+### Creating a Guest File
+- Select option `8` to create a file (`guests.txt`) with all guest information sorted by last name.
 
----
+## Contributing
+Contributions are welcome! Please fork this repository and submit a pull request for any features, bug fixes, or improvements.
 
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+```
+
+Este `README.md` proporciona una guía completa y fácil de seguir para los usuarios y desarrolladores, asegurando que puedan instalar, utilizar y contribuir al proyecto de manera efectiva.
