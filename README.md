@@ -1,6 +1,4 @@
-Aquí tienes un `README.md` actualizado y mejorado para el Hotel Luxor Management System:
 
-```markdown
 # Hotel Luxor Management System
 
 ![Hotel Luxor](https://github.com/JoacoMarc/Hotel-Guest-Management-System/blob/main/HotelLuxorBanner.jpg)
@@ -86,9 +84,3 @@ Choose an option:
 
 ## Contributing
 Contributions are welcome! Please fork this repository and submit a pull request for any features, bug fixes, or improvements.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-```
-
-Este `README.md` proporciona una guía completa y fácil de seguir para los usuarios y desarrolladores, asegurando que puedan instalar, utilizar y contribuir al proyecto de manera efectiva.
