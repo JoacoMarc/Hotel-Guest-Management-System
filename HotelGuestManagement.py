@@ -28,7 +28,7 @@ def assign_room(id, first_name, last_name, birth_date, check_in, check_out, occu
     """Assigns a specified room to a guest."""
     guest = {"id": id, "first_name": first_name, "last_name": last_name, 
              "birth_date": birth_date, "check_in": check_in, "check_out": check_out, 
-             "occupants": occupants}
+             "occupants": occupants, "floor": None, "room": None}
 
     # If there are more occupants, ask for their details
     if occupants > 1:
@@ -49,6 +49,8 @@ def assign_room(id, first_name, last_name, birth_date, check_in, check_out, occu
         row = int(input(Fore.CYAN + "Enter floor (1-10): " + Style.RESET_ALL)) - 1
         col = int(input(Fore.CYAN + "Enter room number (1-6): " + Style.RESET_ALL)) - 1
         if matrix[row][col] == 0:
+            guest["floor"] = row + 1
+            guest["room"] = col + 1
             matrix[row][col] = guest
             break
         else:
@@ -73,7 +75,9 @@ def print_guest_info(guest):
           f"  Birth Date: {guest['birth_date']}\n"
           f"  Check-in Date: {guest['check_in']}\n"
           f"  Check-out Date: {guest['check_out']}\n"
-          f"  Number of Occupants: {guest['occupants']}" + Style.RESET_ALL)
+          f"  Number of Occupants: {guest['occupants']}\n"
+          f"  Floor: {guest['floor']}\n"
+          f"  Room: {guest['room']}" + Style.RESET_ALL)
     
     if guest["additional_occupants"]:
         print(Fore.GREEN + "  Additional Occupants:" + Style.RESET_ALL)
@@ -128,14 +132,14 @@ def create_guest_file(matrix):
 
         ws.append(headers)
 
-        for floor_index, floor in enumerate(matrix):
-            for room_index, guest in enumerate(floor):
+        for floor in matrix:
+            for guest in floor:
                 if guest != 0:
-                    guest_list = [10 - floor_index, room_index + 1, guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
+                    guest_list = [guest["floor"], guest["room"], guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
                                   guest["check_in"], guest["check_out"], guest["occupants"]]
                     ws.append(guest_list)
                     for occupant in guest["additional_occupants"]:
-                        occupant_list = [10 - floor_index, room_index + 1, occupant["id"], occupant["first_name"], occupant["last_name"], 
+                        occupant_list = [guest["floor"], guest["room"], occupant["id"], occupant["first_name"], occupant["last_name"], 
                                          occupant["birth_date"], "", "", ""]
                         ws.append(occupant_list)
 
@@ -247,3 +251,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
