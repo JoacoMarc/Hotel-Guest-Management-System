@@ -1,254 +1,370 @@
+import tkinter as tk
+from tkinter import ttk, messagebox, simpledialog
 from datetime import datetime
-from tabulate import tabulate
-from colorama import Fore, Style, init
-from openpyxl import Workbook
+from colorama import init
+from openpyxl import Workbook, load_workbook
+from PIL import Image, ImageTk
+import os
 
 # Initialize colorama
 init()
 
-def generate_matrix(rows=10, columns=6):
-    """Generates an empty matrix of size rows x columns."""
-    return [[0 for _ in range(columns)] for _ in range(rows)]
+class HotelApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Luxor Hotel Management System")
 
-def print_matrix(matrix):
-    """Prints the matrix in a readable format."""
-    display_matrix = [[room["occupants"] if room != 0 else 0 for room in floor] for floor in matrix]
-    display_matrix.reverse()  # Reverse the matrix to print from top floor to bottom floor
-    floor_numbers = [[f"Floor {10 - i}"] + display_matrix[i] for i in range(len(display_matrix))]
-    headers = [" "] + [f"Room {i+1}" for i in range(len(display_matrix[0]))]
-    print(tabulate(floor_numbers, headers, tablefmt="fancy_grid"))
+        self.style = ttk.Style()
+        self.style.configure("Red.TButton", background="red", foreground="white")
+        
+        self.id_list = []
+        self.matrix = self.generate_matrix()
+        
+        if os.path.exists("guests.xlsx"):
+            self.load_guest_file()
 
-def validate_dates(start_date, end_date):
-    """Validates that the start date is before the end date."""
-    start = datetime.strptime(str(start_date), '%d%m%Y')
-    end = datetime.strptime(str(end_date), '%d%m%Y')
-    return start < end
+        self.create_widgets()
 
-def assign_room(id, first_name, last_name, birth_date, check_in, check_out, occupants, matrix):
-    """Assigns a specified room to a guest."""
-    guest = {"id": id, "first_name": first_name, "last_name": last_name, 
-             "birth_date": birth_date, "check_in": check_in, "check_out": check_out, 
-             "occupants": occupants, "floor": None, "room": None}
+    def generate_matrix(self, rows=10, columns=6):
+        return [[0 for _ in range(columns)] for _ in range(rows)]
 
-    # If there are more occupants, ask for their details
-    if occupants > 1:
-        additional_occupants = []
-        for i in range(occupants - 1):
-            print(Fore.CYAN + f"Enter details for occupant {i+2}:" + Style.RESET_ALL)
-            occupant_id = int(input("  Enter ID: "))
-            occupant_first_name = input("  Enter first name: ")
-            occupant_last_name = input("  Enter last name: ")
-            occupant_birth_date = int(input("  Enter birth date (ddmmyyyy): "))
-            additional_occupants.append({"id": occupant_id, "first_name": occupant_first_name, 
-                                         "last_name": occupant_last_name, "birth_date": occupant_birth_date})
-        guest["additional_occupants"] = additional_occupants
-    else:
-        guest["additional_occupants"] = []
+    def validate_dates(self, start_date, end_date):
+        start = datetime.strptime(str(start_date), '%d%m%Y')
+        end = datetime.strptime(str(end_date), '%d%m%Y')
+        return start < end
 
-    while True:
-        row = int(input(Fore.CYAN + "Enter floor (1-10): " + Style.RESET_ALL)) - 1
-        col = int(input(Fore.CYAN + "Enter room number (1-6): " + Style.RESET_ALL)) - 1
-        if matrix[row][col] == 0:
-            guest["floor"] = row + 1
-            guest["room"] = col + 1
-            matrix[row][col] = guest
-            break
+    def assign_room(self, id, first_name, last_name, birth_date, check_in, check_out, occupants):
+        guest = {"id": id, "first_name": first_name, "last_name": last_name, 
+                 "birth_date": birth_date, "check_in": check_in, "check_out": check_out, 
+                 "occupants": occupants, "floor": None, "room": None}
+
+        if occupants > 1:
+            additional_occupants = []
+            for i in range(occupants - 1):
+                occupant_id = int(self.get_user_input(f"Enter ID for occupant {i+2}:"))
+                occupant_first_name = self.get_user_input(f"Enter first name for occupant {i+2}:")
+                occupant_last_name = self.get_user_input(f"Enter last name for occupant {i+2}:")
+                occupant_birth_date = int(self.get_user_input(f"Enter birth date (ddmmyyyy) for occupant {i+2}:"))
+                additional_occupants.append({"id": occupant_id, "first_name": occupant_first_name, 
+                                             "last_name": occupant_last_name, "birth_date": occupant_birth_date})
+            guest["additional_occupants"] = additional_occupants
         else:
-            print(Fore.RED + "Room already occupied, please choose another." + Style.RESET_ALL)
+            guest["additional_occupants"] = []
 
-    return matrix
+        while True:
+            row = int(self.get_user_input("Enter floor (1-10):")) - 1
+            col = int(self.get_user_input("Enter room number (1-6):")) - 1
+            if self.matrix[row][col] == 0:
+                guest["floor"] = row + 1
+                guest["room"] = col + 1
+                self.matrix[row][col] = guest
+                break
+            else:
+                messagebox.showerror("Error", "Room already occupied, please choose another.")
 
-def find_guest(matrix, last_name):
-    """Finds and returns the room and guest data for a given last name."""
-    for floor_index, floor in enumerate(matrix):
-        for room_index, room in enumerate(floor):
-            if room != 0 and room["last_name"].lower() == last_name.lower():
-                return (floor_index, room_index, room)
-    return None
+        return self.matrix
 
-def print_guest_info(guest):
-    """Prints guest information in a readable format."""
-    print(Fore.GREEN + f"Guest Information:\n"
-          f"  ID: {guest['id']}\n"
-          f"  First Name: {guest['first_name']}\n"
-          f"  Last Name: {guest['last_name']}\n"
-          f"  Birth Date: {guest['birth_date']}\n"
-          f"  Check-in Date: {guest['check_in']}\n"
-          f"  Check-out Date: {guest['check_out']}\n"
-          f"  Number of Occupants: {guest['occupants']}\n"
-          f"  Floor: {guest['floor']}\n"
-          f"  Room: {guest['room']}" + Style.RESET_ALL)
+    def get_user_input(self, prompt):
+        return simpledialog.askstring("Input", prompt)
+
+    def find_guest(self, last_name):
+        for floor_index, floor in enumerate(self.matrix):
+            for room_index, room in enumerate(floor):
+                if room != 0 and room["last_name"].lower() == last_name.lower():
+                    return (floor_index, room_index, room)
+        return None
+
+    def print_guest_info(self, guest):
+        guest_info = (f"Guest Information:\n"
+                      f"  ID: {guest['id']}\n"
+                      f"  First Name: {guest['first_name']}\n"
+                      f"  Last Name: {guest['last_name']}\n"
+                      f"  Birth Date: {guest['birth_date']}\n"
+                      f"  Check-in Date: {guest['check_in']}\n"
+                      f"  Check-out Date: {guest['check_out']}\n"
+                      f"  Number of Occupants: {guest['occupants']}\n"
+                      f"  Floor: {guest['floor']}\n"
+                      f"  Room: {guest['room']}")
+        
+        if guest["additional_occupants"]:
+            guest_info += "\n  Additional Occupants:"
+            for i, occupant in enumerate(guest["additional_occupants"], start=1):
+                guest_info += (f"\n    Occupant {i}:\n"
+                               f"      ID: {occupant['id']}\n"
+                               f"      First Name: {occupant['first_name']}\n"
+                               f"      Last Name: {occupant['last_name']}\n"
+                               f"      Birth Date: {occupant['birth_date']}")
+        
+        messagebox.showinfo("Guest Info", guest_info)
+
+    def most_occupied_floor(self):
+        occupancy = [sum(1 for room in floor if room != 0) for floor in self.matrix]
+        most_occupied = occupancy.index(max(occupancy))
+        return most_occupied + 1
+
+    def empty_rooms(self):
+        return sum(1 for floor in self.matrix for room in floor if room == 0)
+
+    def floor_with_most_occupants(self):
+        occupants = [sum(room["occupants"] for room in floor if room != 0) for floor in self.matrix]
+        return occupants.index(max(occupants)) + 1
+
+    def next_departures(self, current_date):
+        current = datetime.strptime(str(current_date), '%d%m%Y')
+        departures = [(floor, room, datetime.strptime(str(room["check_out"]), '%d%m%Y')) 
+                      for floor in self.matrix for room in floor if room != 0]
+
+        if not departures:
+            return []
+
+        days_diff = [(floor, room, (departure - current).days) 
+                     for floor, room, departure in departures]
+
+        closest_days = min(days_diff, key=lambda x: x[2])[2]
+        next_rooms = [room for floor, room, days in days_diff if days == closest_days]
+
+        return next_rooms
+
+    def create_guest_file(self):
+        try:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Guests"
+
+            headers = ["Floor", "Room", "ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
+
+            ws.append(headers)
+
+            for floor in self.matrix:
+                for guest in floor:
+                    if guest != 0:
+                        guest_list = [guest["floor"], guest["room"], guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
+                                      guest["check_in"], guest["check_out"], guest["occupants"]]
+                        ws.append(guest_list)
+                        for occupant in guest["additional_occupants"]:
+                            occupant_list = [guest["floor"], guest["room"], occupant["id"], occupant["first_name"], occupant["last_name"], 
+                                             occupant["birth_date"], "", "", ""]
+                            ws.append(occupant_list)
+
+            wb.save("guests.xlsx")
+            messagebox.showinfo("Success", "Guest file created successfully.")
+
+        except FileNotFoundError:
+            messagebox.showerror("Error", "File not found.")
+        except OSError as msg:
+            messagebox.showerror("Error", f"Error: {msg}")
+
+    def load_guest_file(self):
+        try:
+            wb = load_workbook("guests.xlsx")
+            ws = wb.active
+            self.matrix = self.generate_matrix()  # Reset matrix
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                if all(cell is None for cell in row):
+                    continue
+                floor, room, id, first_name, last_name, birth_date, check_in, check_out, occupants = row
+                if id:
+                    guest = {
+                        "id": id,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "birth_date": birth_date,
+                        "check_in": check_in,
+                        "check_out": check_out,
+                        "occupants": occupants,
+                        "floor": floor,
+                        "room": room,
+                        "additional_occupants": []
+                    }
+                    self.matrix[floor - 1][room - 1] = guest
+                    self.id_list.append(id)
+
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                if all(cell is None for cell in row):
+                    continue
+                floor, room, id, first_name, last_name, birth_date, _, _, _ = row
+                if id is None:
+                    continue
+                guest = self.matrix[floor - 1][room - 1]
+                if guest != 0 and id != guest["id"]:
+                    guest["additional_occupants"].append({
+                        "id": id,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "birth_date": birth_date
+                    })
+
+        except FileNotFoundError:
+            messagebox.showerror("Error", "Guest file not found.")
+        except OSError as msg:
+            messagebox.showerror("Error", f"Error: {msg}")
+
+    def clear_guest_file(self):
+        try:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Guests"
+
+            headers = ["Floor", "Room", "ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
+            ws.append(headers)
+
+            wb.save("guests.xlsx")
+            messagebox.showinfo("Success", "Guest file cleared successfully.")
+
+        except FileNotFoundError:
+            messagebox.showerror("Error", "File not found.")
+        except OSError as msg:
+            messagebox.showerror("Error", f"Error: {msg}")
+
+    def enter_guest(self):
+        try:
+            id = int(self.get_user_input("Enter ID: "))
+            assert len(str(id)) == 8, "ID must have 8 digits."
+            assert id not in self.id_list, "ID already exists, please enter another."
+            self.id_list.append(id)
+
+            first_name = self.get_user_input("Enter first name:")
+            last_name = self.get_user_input("Enter last name:")
+            birth_date = int(self.get_user_input("Enter birth date (ddmmyyyy):"))
+            check_in = int(self.get_user_input("Enter check-in date (ddmmyyyy):"))
+            check_out = int(self.get_user_input("Enter check-out date (ddmmyyyy):"))
+            assert self.validate_dates(check_in, check_out), "Check-in date must be before check-out date."
+                
+            occupants = int(self.get_user_input("Enter number of occupants:"))
+
+            self.assign_room(id, first_name, last_name, birth_date, check_in, check_out, occupants)
+            self.create_guest_file()  # Update the Excel file after adding a new guest
+
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numbers for ID, birth date, check-in, and check-out dates.")
+        except AssertionError as msg:
+            messagebox.showerror("Error", str(msg))
+            if id in self.id_list:
+                self.id_list.remove(id)
+
+    def find_guest_ui(self):
+        last_name = self.get_user_input("Enter last name to search:")
+        result = self.find_guest(last_name)
+        if result:
+            floor, room, guest = result
+            self.print_guest_info(guest)
+        else:
+            messagebox.showerror("Error", "Guest not found.")
+
+    def most_occupied_floor_ui(self):
+        floor = self.most_occupied_floor()
+        messagebox.showinfo("Most Occupied Floor", f"The most occupied floor is: {floor}")
+
+    def empty_rooms_ui(self):
+        empty_rooms_count = self.empty_rooms()
+        messagebox.showinfo("Empty Rooms", f"The number of empty rooms is: {empty_rooms_count}")
+
+    def floor_with_most_occupants_ui(self):
+        floor = self.floor_with_most_occupants()
+        messagebox.showinfo("Floor with Most Occupants", f"The floor with the most occupants is: {floor}")
+
+    def next_departures_ui(self):
+        current_date = int(self.get_user_input("Enter current date (ddmmyyyy):"))
+        upcoming_rooms = self.next_departures(current_date)
+        
+        if not upcoming_rooms:
+            messagebox.showinfo("Next Departures", "No upcoming departures found.")
+            return
+        
+        departures_info = "Rooms with upcoming departures:\n"
+        for room in upcoming_rooms:
+            floor = room["floor"]
+            room_number = room["room"]
+            last_name = room["last_name"]
+            departures_info += f"{last_name}, Floor: {floor}, Room: {room_number}\n"
+        
+        messagebox.showinfo("Next Departures", departures_info)
+
+    def view_hotel(self):
+        hotel_window = tk.Toplevel(self.root)
+        hotel_window.title("Hotel View")
+
+        canvas = tk.Canvas(hotel_window, width=800, height=600, bg="white")
+        canvas.pack(expand=True, fill="both")
+
+        room_width = 100
+        room_height = 50
+        padding = 10
+
+        for i in range(10):
+            floor_text = f"Floor {10 - i}"
+            canvas.create_text(padding, (i + 1) * (room_height + padding) - room_height // 2, anchor="w", font=('Arial', 12, 'bold'), text=floor_text, fill="black")
+            
+            for j in range(6):
+                room_status = self.matrix[9 - i][j]
+                room_text = f"Room {j+1}\n"
+                if room_status == 0:
+                    color = "green"
+                    room_text += "Empty"
+                else:
+                    color = "red"
+                    room_text += f"Occupied\n({room_status['occupants']})"
+
+                x0 = (j + 1) * (room_width + padding) + padding
+                y0 = i * (room_height + padding) + padding
+                x1 = x0 + room_width
+                y1 = y0 + room_height
+
+                canvas.create_rectangle(x0, y0, x1, y1, fill=color)
+                canvas.create_text((x0 + x1) // 2, (y0 + y1) // 2, text=room_text, font=('Arial', 10, 'bold'), fill="black")
+
+        close_button = ttk.Button(hotel_window, text="Close", command=hotel_window.destroy, style="Red.TButton")
+        close_button.pack(pady=10)
+
+        self.exit_button.pack(pady=10)
     
-    if guest["additional_occupants"]:
-        print(Fore.GREEN + "  Additional Occupants:" + Style.RESET_ALL)
-        for i, occupant in enumerate(guest["additional_occupants"], start=1):
-            print(Fore.GREEN + f"    Occupant {i}:\n"
-                  f"      ID: {occupant['id']}\n"
-                  f"      First Name: {occupant['first_name']}\n"
-                  f"      Last Name: {occupant['last_name']}\n"
-                  f"      Birth Date: {occupant['birth_date']}" + Style.RESET_ALL)
+    def create_widgets(self):
+        try:
+            self.img = Image.open("/Users/joaquinmarcoff/Downloads/HotelLuxorBanner.jpg")
+            self.img = self.img.resize((400, 100), Image.LANCZOS)  # Resize image
+            self.photo = ImageTk.PhotoImage(self.img)
+            self.image_label = tk.Label(self.root, image=self.photo)
+            self.image_label.pack(pady=10)
+        except FileNotFoundError:
+            messagebox.showerror("Error", "Image file not found. Please check the path and try again.")
 
-def most_occupied_floor(matrix):
-    """Returns the most occupied floor."""
-    occupancy = [sum(1 for room in floor if room != 0) for floor in matrix]
-    most_occupied = occupancy.index(max(occupancy))
-    return most_occupied + 1
+        self.add_guest_button = tk.Button(self.root, text="Enter New Guest", command=self.enter_guest)
+        self.add_guest_button.pack(pady=10)
 
-def empty_rooms(matrix):
-    """Counts the number of empty rooms."""
-    return sum(1 for floor in matrix for room in floor if room == 0)
+        self.find_guest_button = tk.Button(self.root, text="Find Guest by Last Name", command=self.find_guest_ui)
+        self.find_guest_button.pack(pady=10)
 
-def floor_with_most_occupants(matrix):
-    """Returns the floor with the most occupants."""
-    occupants = [sum(room["occupants"] for room in floor if room != 0) for floor in matrix]
-    return occupants.index(max(occupants)) + 1
+        self.most_occupied_floor_button = tk.Button(self.root, text="Most Occupied Floor", command=self.most_occupied_floor_ui)
+        self.most_occupied_floor_button.pack(pady=10)
 
-def next_departures(matrix, current_date):
-    """Finds the rooms with the closest upcoming departures."""
-    current = datetime.strptime(str(current_date), '%d%m%Y')
-    departures = [(floor, room, datetime.strptime(str(room["check_out"]), '%d%m%Y')) 
-                  for floor in matrix for room in floor if room != 0]
+        self.empty_rooms_button = tk.Button(self.root, text="Number of Empty Rooms", command=self.empty_rooms_ui)
+        self.empty_rooms_button.pack(pady=10)
 
-    days_diff = [(floor, room, (departure - current).days) 
-                 for floor, room, departure in departures]
+        self.floor_with_most_occupants_button = tk.Button(self.root, text="Floor with Most Occupants", command=self.floor_with_most_occupants_ui)
+        self.floor_with_most_occupants_button.pack(pady=10)
 
-    closest_days = min(days_diff, key=lambda x: x[2])[2]
-    next_rooms = [room for floor, room, days in days_diff if days == closest_days]
+        self.next_departures_button = tk.Button(self.root, text="Next Departures", command=self.next_departures_ui)
+        self.next_departures_button.pack(pady=10)
 
-    return next_rooms
+        self.view_hotel_button = tk.Button(self.root, text="View Hotel", command=self.view_hotel)
+        self.view_hotel_button.pack(pady=10)
 
-def sort_by_last_name(guest):
-    """Sort function by last name."""
-    return guest["last_name"]
+        self.create_guest_file_button = tk.Button(self.root, text="Create or Update Guest Excel", command=self.create_guest_file)
+        self.create_guest_file_button.pack(pady=10)
 
-def create_guest_file(matrix):
-    """Creates an Excel file with guest information."""
-    try:
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Guests"
+        self.clear_guest_file_button = tk.Button(self.root, text="Clear Guest Excel and Vacate Hotel", command=self.clear_guest_file)
+        self.clear_guest_file_button.pack(pady=10)
+        
+        self.exit_button = ttk.Button(self.root, text="Exit", command=self.root.quit, style="Red.TButton")
+        self.exit_button.pack(pady=10)
 
-        headers = ["Floor", "Room", "ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
-
-        ws.append(headers)
-
-        for floor in matrix:
-            for guest in floor:
-                if guest != 0:
-                    guest_list = [guest["floor"], guest["room"], guest["id"], guest["first_name"], guest["last_name"], guest["birth_date"], 
-                                  guest["check_in"], guest["check_out"], guest["occupants"]]
-                    ws.append(guest_list)
-                    for occupant in guest["additional_occupants"]:
-                        occupant_list = [guest["floor"], guest["room"], occupant["id"], occupant["first_name"], occupant["last_name"], 
-                                         occupant["birth_date"], "", "", ""]
-                        ws.append(occupant_list)
-
-        wb.save("guests.xlsx")
-        print(Fore.GREEN + "Guest file created successfully." + Style.RESET_ALL)
-
-    except FileNotFoundError:
-        print(Fore.RED + "File not found." + Style.RESET_ALL)
-    except OSError as msg:
-        print(Fore.RED + "Error:", msg, Style.RESET_ALL)
-
-def clear_guest_file():
-    """Clears the Excel file by creating a new empty file."""
-    try:
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Guests"
-
-        headers = ["Floor", "Room", "ID", "First Name", "Last Name", "Birth Date", "Check-in Date", "Check-out Date", "Occupants"]
-        ws.append(headers)
-
-        wb.save("guests.xlsx")
-        print(Fore.GREEN + "Guest file cleared successfully." + Style.RESET_ALL)
-
-    except FileNotFoundError:
-        print(Fore.RED + "File not found." + Style.RESET_ALL)
-    except OSError as msg:
-        print(Fore.RED + "Error:", msg, Style.RESET_ALL)
 
 def main():
-    """Main function to handle the program logic."""
-    print(Fore.MAGENTA + Style.BRIGHT + "=======================")
-    print(Fore.CYAN + Style.BRIGHT + "WELCOME TO LUXOR HOTEL")
-    print(Fore.MAGENTA + Style.BRIGHT + "=======================", end="\n\n")
-    
-    id_list = []
-    matrix = generate_matrix()
-
-    while True:
-        print(Fore.YELLOW + "\nMenu:\n1. Enter new guest\n2. Find guest by last name\n3. Most occupied floor\n4. Number of empty rooms\n5. Floor with most occupants\n6. Next departures\n7. View hotel\n8. Create or update guest Excel\n9. Clear guest Excel and vacate hotel\n10. Exit" + Style.RESET_ALL)
-        choice = input(Fore.CYAN + "Choose an option: " + Style.RESET_ALL)
-        
-        if choice == '1':
-            try:
-                id = int(input(Fore.CYAN + "Enter ID (-1 to exit): " + Style.RESET_ALL))
-                if id == -1:
-                    continue
-                assert len(str(id)) == 8, Fore.RED + "ID must have 8 digits." + Style.RESET_ALL
-                assert id not in id_list, Fore.RED + "ID already exists, please enter another." + Style.RESET_ALL
-                id_list.append(id)
-
-                first_name = input(Fore.CYAN + "Enter first name: " + Style.RESET_ALL)
-                last_name = input(Fore.CYAN + "Enter last name: " + Style.RESET_ALL)
-                birth_date = int(input(Fore.CYAN + "Enter birth date (ddmmyyyy): " + Style.RESET_ALL))
-                check_in = int(input(Fore.CYAN + "Enter check-in date (ddmmyyyy): " + Style.RESET_ALL))
-                check_out = int(input(Fore.CYAN + "Enter check-out date (ddmmyyyy): " + Style.RESET_ALL))
-                assert validate_dates(check_in, check_out), Fore.RED + "Check-in date must be before check-out date." + Style.RESET_ALL
-                    
-                occupants = int(input(Fore.CYAN + "Enter number of occupants: " + Style.RESET_ALL))
-
-                matrix = assign_room(id, first_name, last_name, birth_date, check_in, check_out, occupants, matrix)
-
-            except ValueError:
-                print(Fore.RED + "Please enter valid numbers for ID, birth date, check-in, and check-out dates." + Style.RESET_ALL)
-            except AssertionError as msg:
-                print(Fore.RED + "Error: " + str(msg) + Style.RESET_ALL)
-                if id in id_list:
-                    id_list.remove(id)
-
-        elif choice == '2':
-            last_name = input(Fore.CYAN + "Enter last name to search: " + Style.RESET_ALL)
-            result = find_guest(matrix, last_name)
-            if result:
-                floor, room, guest = result
-                print(Fore.GREEN + f"Guest found in floor {floor + 1}, room {room + 1}:" + Style.RESET_ALL)
-                print_guest_info(guest)
-            else:
-                print(Fore.RED + "Guest not found." + Style.RESET_ALL)
-        
-        elif choice == '3':
-            print(Fore.GREEN + "\nMost occupied floor is:", most_occupied_floor(matrix), Style.RESET_ALL)
-
-        elif choice == '4':
-            print(Fore.GREEN + "\nNumber of empty rooms:", empty_rooms(matrix), Style.RESET_ALL)
-
-        elif choice == '5':
-            print(Fore.GREEN + "\nFloor with most occupants:", floor_with_most_occupants(matrix), Style.RESET_ALL)
-
-        elif choice == '6':
-            current_date = int(input(Fore.CYAN + "Enter current date (ddmmyyyy): " + Style.RESET_ALL))
-            print(Fore.GREEN + "\nRooms with upcoming departures:\n" + Style.RESET_ALL)
-            upcoming_rooms = next_departures(matrix, current_date)
-            for room in upcoming_rooms:
-                print(Fore.YELLOW + "Room of:", room["last_name"] + Style.RESET_ALL)
-
-        elif choice == '7':
-            print_matrix(matrix)
-
-        elif choice == '8':
-            create_guest_file(matrix)
-
-        elif choice == '9':
-            id_list.clear()
-            matrix = generate_matrix()
-            clear_guest_file()
-
-        elif choice == '10':
-            break
+    root = tk.Tk()
+    app = HotelApp(root)
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
+
 
