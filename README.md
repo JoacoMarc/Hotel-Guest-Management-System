@@ -112,7 +112,3 @@ Choose an option:
 
 ## 🤝 Contributing
 Contributions are welcome! Please fork this repository and submit a pull request for any features, bug fixes, or improvements.
-
-## 📜 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-```
