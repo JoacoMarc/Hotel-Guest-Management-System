@@ -33,17 +33,6 @@ Welcome to the Luxor Hotel Management System! This program is designed to manage
    cd hotel-luxor-management
    ```
 
-2. Create and activate a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
-
-3. Install the dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
 ### Requirements
 Ensure you have the following libraries installed:
 - `tkinter` (included with Python)
