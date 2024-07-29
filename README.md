@@ -12,7 +12,6 @@ Welcome to the Luxor Hotel Management System! This program is designed to manage
 - [Usage](#usage)
 - [Examples](#examples)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## 🌟 Features
 - ➕ **Add new guests** with their details
