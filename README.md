@@ -87,16 +87,5 @@ Choose an option:
 
 - Select option `9` to clear the guest file and vacate the hotel. This will reset all guest information and create a new empty Excel file.
 
-## 🛠️ Code Overview
-
-- **Card Hierarchy**: Defined using a dictionary `jerarquia` with cards as keys and their ranks as values.
-- **Card Distribution**: The function `distribuircartas` handles the random distribution of cards to players.
-- **Display Cards**: The function `mostrar_cartas` prints each player's hand.
-- **Player Choice**: The function `elegir_carta` allows players to choose a card to play.
-- **Play Rounds**: 
-  - The function `jugar_ronda` manages the logic for playing a single round and determining the winner.
-  - The function `jugar_desempate` handles tie-breaker rounds.
-- **Game Loop**: The main loop runs through the rounds, checks for winners, and handles the game flow.
-
 ## 🤝 Contributing
 Contributions are welcome! Please fork this repository and submit a pull request for any features, bug fixes, or improvements.
